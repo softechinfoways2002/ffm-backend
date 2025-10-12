@@ -7,21 +7,21 @@ const registerUser = async (req, res) => {
   try {
     const { name, email, password, role, phone } = req.body;
 
-    // Basic validation
+    // check if all fields are provided
     if (!name || !email || !password || !role || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if user already exists
+    // check if user already exists
     const isUserExists = await User.findOne({ email });
     if (isUserExists) {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    // Hash password
+    // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
+    // create new user
     const user = await User.create({
       name,
       email,
@@ -30,24 +30,23 @@ const registerUser = async (req, res) => {
       phone
     });
 
-    // Generate JWT Token
+    // generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "1h" }
     );
 
-    // Send token in httpOnly cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000 // 1 hour
-    });
-
+    // send token in response body (React Native does not use cookies)
     return res.status(201).json({
       message: "User registered successfully",
-      userData: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      },
+      token
     });
 
   } catch (error) {
@@ -57,44 +56,38 @@ const registerUser = async (req, res) => {
 };
 
 // ================= LOGIN CONTROLLER =================
-// ================= LOGIN CONTROLLER =================
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // check if email and password are provided
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
+    // find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT Token
+    // generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "1h" }
     );
 
-    // Store token in cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 1000
-    });
-
-    // ✅ Also send token in response body
+    // send token in response body
     return res.status(200).json({
       message: "Login successful",
-      token, // <---- visible in Swagger & Postman
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -109,10 +102,9 @@ const loginUser = async (req, res) => {
   }
 };
 
-
 // ================= LOGOUT CONTROLLER =================
+// React Native logout only deletes token on client
 const logoutUser = (req, res) => {
-  res.clearCookie("token");
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
