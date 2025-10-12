@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { registerUser, loginUser, logoutUser } = require("../controllers/auth.controller");
+const userController = require("../controllers/auth.controller");
 
 /**
  * @swagger
@@ -36,11 +36,10 @@ const { registerUser, loginUser, logoutUser } = require("../controllers/auth.con
  *                 example: john@example.com
  *               password:
  *                 type: string
- *                 example: 123456
+ *                 example: password123
  *               role:
  *                 type: string
- *                 enum: [admin, manager, employee]
- *                 example: employee
+ *                 example: manager
  *               phone:
  *                 type: string
  *                 example: "9876543210"
@@ -48,19 +47,19 @@ const { registerUser, loginUser, logoutUser } = require("../controllers/auth.con
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Missing required fields
+ *         description: All fields are required
  *       409:
  *         description: User already exists
  *       500:
  *         description: Internal server error
  */
-router.post("/register", registerUser);
+router.post("/register", userController.registerUser);
 
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Login a user
+ *     summary: Login user and get JWT token
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -77,50 +76,29 @@ router.post("/register", registerUser);
  *                 example: john@example.com
  *               password:
  *                 type: string
- *                 example: 123456
+ *                 example: password123
  *     responses:
  *       200:
- *         description: Login successful, returns JWT token and user data
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Login successful
- *                 token:
- *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: 652a8c6d9e9b8a7d2d1a1234
- *                     name:
- *                       type: string
- *                       example: John Doe
- *                     email:
- *                       type: string
- *                       example: john@example.com
- *                     role:
- *                       type: string
- *                       example: employee
+ *         description: Login successful
+ *       400:
+ *         description: Email and password are required
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Internal server error
  */
-
-router.post("/login", loginUser);
+router.post("/login", userController.loginUser);
 
 /**
  * @swagger
  * /api/auth/logout:
  *   post:
- *     summary: Logout a user (clears cookie)
+ *     summary: Logout user (client-side token deletion)
  *     tags: [Auth]
  *     responses:
  *       200:
  *         description: Logged out successfully
  */
-router.post("/logout", logoutUser);
+router.post("/logout", userController.logoutUser);
 
 module.exports = router;
