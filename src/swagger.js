@@ -12,7 +12,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "https://ffm-backend-lt4l.onrender.com/",
       },
     ],
     components: {
