@@ -57,22 +57,20 @@ const registerUser = async (req, res) => {
 };
 
 // ================= LOGIN CONTROLLER =================
+// ================= LOGIN CONTROLLER =================
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -85,17 +83,24 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    // Send token in httpOnly cookie
+    // Store token in cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 1000 // 1 hour
+      maxAge: 60 * 60 * 1000
     });
 
+    // ✅ Also send token in response body
     return res.status(200).json({
       message: "Login successful",
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      token, // <---- visible in Swagger & Postman
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
 
   } catch (error) {
@@ -103,6 +108,7 @@ const loginUser = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // ================= LOGOUT CONTROLLER =================
 const logoutUser = (req, res) => {

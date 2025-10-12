@@ -1,5 +1,5 @@
 const Client = require("../models/client.model");
-
+const Meeting=require("../models/meeting.model")
 
 // ================= CREATE CLIENT =================
 const createClient = async (req, res) => {

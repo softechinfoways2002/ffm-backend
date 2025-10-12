@@ -1,19 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/auth.controller");
+const { registerUser, loginUser, logoutUser } = require("../controllers/auth.controller");
 
 /**
  * @swagger
  * tags:
  *   name: Auth
- *   description: Authentication & User Management
+ *   description: Authentication and user management
  */
 
 /**
  * @swagger
- * /auth/register:
+ * /api/auth/register:
  *   post:
- *     summary: Register a new user (manager or employee)
+ *     summary: Register a new user
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -25,6 +25,7 @@ const userController = require("../controllers/auth.controller");
  *               - name
  *               - email
  *               - password
+ *               - role
  *               - phone
  *             properties:
  *               name:
@@ -32,25 +33,34 @@ const userController = require("../controllers/auth.controller");
  *                 example: John Doe
  *               email:
  *                 type: string
- *                 example: johndoe@example.com
+ *                 example: john@example.com
  *               password:
  *                 type: string
- *                 example: secret123
+ *                 example: 123456
+ *               role:
+ *                 type: string
+ *                 enum: [admin, manager, employee]
+ *                 example: employee
  *               phone:
  *                 type: string
  *                 example: "9876543210"
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User registered successfully
  *       400:
- *         description: Validation error
+ *         description: Missing required fields
+ *       409:
+ *         description: User already exists
+ *       500:
+ *         description: Internal server error
  */
+router.post("/register", registerUser);
 
 /**
  * @swagger
- * /auth/login:
+ * /api/auth/login:
  *   post:
- *     summary: Login user and return JWT token
+ *     summary: Login a user
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -64,32 +74,53 @@ const userController = require("../controllers/auth.controller");
  *             properties:
  *               email:
  *                 type: string
- *                 example: johndoe@example.com
+ *                 example: john@example.com
  *               password:
  *                 type: string
- *                 example: secret123
+ *                 example: 123456
  *     responses:
  *       200:
- *         description: Login successful
- *       401:
- *         description: Invalid credentials
- *       404:
- *         description: User not found
+ *         description: Login successful, returns JWT token and user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 token:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: 652a8c6d9e9b8a7d2d1a1234
+ *                     name:
+ *                       type: string
+ *                       example: John Doe
+ *                     email:
+ *                       type: string
+ *                       example: john@example.com
+ *                     role:
+ *                       type: string
+ *                       example: employee
  */
+
+router.post("/login", loginUser);
 
 /**
  * @swagger
- * /auth/logout:
+ * /api/auth/logout:
  *   post:
- *     summary: Logout user (clear session/cookie)
+ *     summary: Logout a user (clears cookie)
  *     tags: [Auth]
  *     responses:
  *       200:
- *         description: Logout successful
+ *         description: Logged out successfully
  */
-
-router.post("/register", userController.registerUser);
-router.post("/login", userController.loginUser);
-router.post("/logout", userController.logoutUser);
+router.post("/logout", logoutUser);
 
 module.exports = router;

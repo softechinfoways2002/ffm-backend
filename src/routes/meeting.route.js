@@ -8,7 +8,7 @@ const { checkRole } = require("../middlewares/role.middleware");
  * @swagger
  * tags:
  *   name: Meetings
- *   description: Meeting management and operations
+ *   description: API for managing client meetings
  */
 
 /**
@@ -26,67 +26,73 @@ const { checkRole } = require("../middlewares/role.middleware");
  *           schema:
  *             type: object
  *             required:
- *               - clientId
- *               - date
- *               - agenda
+ *               - client
+ *               - manager
+ *               - meetingDate
+ *               - latitude
+ *               - longitude
  *             properties:
- *               clientId:
+ *               client:
  *                 type: string
- *                 description: ID of the client the meeting is with
- *               date:
+ *                 description: Client ID
+ *                 example: "652a8c6d9e9b8a7d2d1a1234"
+ *               manager:
+ *                 type: string
+ *                 description: Manager ID
+ *                 example: "652a8c6d9e9b8a7d2d1a5678"
+ *               employee:
+ *                 type: string
+ *                 description: Employee ID (optional)
+ *                 example: "652a8c6d9e9b8a7d2d1a1111"
+ *               meetingDate:
  *                 type: string
  *                 format: date-time
- *               agenda:
+ *                 example: "2025-10-12T10:30:00Z"
+ *               latitude:
+ *                 type: number
+ *                 example: 28.6139
+ *               longitude:
+ *                 type: number
+ *                 example: 77.2090
+ *               status:
  *                 type: string
- *               notes:
- *                 type: string
+ *                 enum: [scheduled, completed, cancelled]
+ *                 example: "scheduled"
  *     responses:
  *       201:
  *         description: Meeting created successfully
  *       400:
- *         description: Invalid input
- *       401:
- *         description: Unauthorized
+ *         description: Required fields missing
+ *       404:
+ *         description: Client not found
  */
-router.post(
-  "/",
-  verifyJwt,
-  checkRole(["admin", "manager"]),
-  meetingController.createMeeting
-);
+router.post("/", verifyJwt, checkRole(["admin", "manager"]), meetingController.createMeeting);
 
 /**
  * @swagger
- * /api/meetings/meetings:
+ * /api/meetings:
  *   get:
- *     summary: Get all meetings (admin sees all, manager sees only their meetings)
+ *     summary: Get all meetings
  *     tags: [Meetings]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of meetings
- *       401:
- *         description: Unauthorized
  */
-router.get(
-  "/meetings",
-  verifyJwt,
-  checkRole(["admin", "manager"]),
-  meetingController.getAllMeetings
-);
+router.get("/", verifyJwt, checkRole(["admin", "manager"]), meetingController.getAllMeetings);
 
 /**
  * @swagger
- * /api/meetings/meetings/{id}:
+ * /api/meetings/{id}:
  *   get:
- *     summary: Get a specific meeting by ID
+ *     summary: Get a meeting by ID
  *     tags: [Meetings]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
  *         description: Meeting ID
  *         schema:
@@ -97,24 +103,19 @@ router.get(
  *       404:
  *         description: Meeting not found
  */
-router.get(
-  "/meetings/:id",
-  verifyJwt,
-  checkRole(["admin", "manager"]),
-  meetingController.getMeetingById
-);
+router.get("/:id", verifyJwt, checkRole(["admin", "manager"]), meetingController.getMeetingById);
 
 /**
  * @swagger
- * /api/meetings/meetings/{id}:
+ * /api/meetings/{id}:
  *   put:
  *     summary: Update a meeting
  *     tags: [Meetings]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
  *         description: Meeting ID
  *         schema:
@@ -126,37 +127,48 @@ router.get(
  *           schema:
  *             type: object
  *             properties:
- *               date:
+ *               client:
+ *                 type: string
+ *                 example: "652a8c6d9e9b8a7d2d1a1234"
+ *               manager:
+ *                 type: string
+ *                 example: "652a8c6d9e9b8a7d2d1a5678"
+ *               employee:
+ *                 type: string
+ *                 example: "652a8c6d9e9b8a7d2d1a1111"
+ *               meetingDate:
  *                 type: string
  *                 format: date-time
- *               agenda:
+ *                 example: "2025-10-15T15:00:00Z"
+ *               latitude:
+ *                 type: number
+ *                 example: 28.7041
+ *               longitude:
+ *                 type: number
+ *                 example: 77.1025
+ *               status:
  *                 type: string
- *               notes:
- *                 type: string
+ *                 enum: [scheduled, completed, cancelled]
+ *                 example: "completed"
  *     responses:
  *       200:
  *         description: Meeting updated successfully
  *       404:
  *         description: Meeting not found
  */
-router.put(
-  "/meetings/:id",
-  verifyJwt,
-  checkRole(["admin", "manager"]),
-  meetingController.updateMeeting
-);
+router.put("/:id", verifyJwt, checkRole(["admin", "manager"]), meetingController.updateMeeting);
 
 /**
  * @swagger
- * /api/meetings/meetings/{id}:
+ * /api/meetings/{id}:
  *   delete:
- *     summary: Delete a meeting (admin only)
+ *     summary: Delete a meeting
  *     tags: [Meetings]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
  *         description: Meeting ID
  *         schema:
@@ -164,16 +176,9 @@ router.put(
  *     responses:
  *       200:
  *         description: Meeting deleted successfully
- *       403:
- *         description: Forbidden
  *       404:
  *         description: Meeting not found
  */
-router.delete(
-  "/meetings/:id",
-  verifyJwt,
-  checkRole(["admin"]),
-  meetingController.deleteMeeting
-);
+router.delete("/:id", verifyJwt, checkRole(["admin"]), meetingController.deleteMeeting);
 
 module.exports = router;
