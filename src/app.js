@@ -14,7 +14,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/meetings", meetingRoutes);
-app.use("/api/reimbursements", reimbursementRoutes);
+app.use("/api/reimbursement", reimbursementRoutes);
 
 // Swagger Docs
 swaggerDocs(app);
