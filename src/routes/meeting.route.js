@@ -180,5 +180,8 @@ router.put("/:id", verifyJwt, checkRole(["admin", "manager"]), meetingController
  *         description: Meeting not found
  */
 router.delete("/:id", verifyJwt, checkRole(["admin"]), meetingController.deleteMeeting);
+router.get("/employee/me", verifyJwt, meetingController.getMeetingsForEmployee);
+
+
 
 module.exports = router;

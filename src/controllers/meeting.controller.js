@@ -111,6 +111,33 @@ const deleteMeeting = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+// =============== GET MEETINGS OF LOGGED-IN EMPLOYEE ===============
+const getMeetingsForEmployee = async (req, res) => {
+  try {
+    // employee ka ID token se aayega
+    const employeeId = req.user._id;
+
+    if (!employeeId) {
+      return res.status(400).json({ message: "Employee ID missing from token" });
+    }
+
+    const meetings = await Meeting.find({ employee: employeeId })
+      .populate("client", "name phone")
+      .populate("manager", "name email role")
+      .populate("employee", "name email role");
+
+    res.status(200).json({
+      message: "Meetings fetched successfully",
+      count: meetings.length,
+      meetings,
+    });
+  } catch (error) {
+    console.error("Employee Meetings Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 
 // ================= EXPORT MODULE =================
 module.exports = {
@@ -119,4 +146,5 @@ module.exports = {
   getMeetingById,
   updateMeeting,
   deleteMeeting,
+  getMeetingsForEmployee
 };
