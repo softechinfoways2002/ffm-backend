@@ -12,7 +12,12 @@ const options = {
     },
     servers: [
       {
-        url: "https://ffm-backend-lt4l.onrender.com/",
+        url: "http://localhost:5500",   
+        description: "Local Server",
+      },
+      {
+        url: "https://ffm-backend-lt4l.onrender.com",  
+        description: "Production Server",
       },
     ],
     components: {
@@ -37,7 +42,7 @@ const swaggerSpec = swaggerJSDoc(options);
 
 function swaggerDocs(app) {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log("📖 Swagger Docs available at http://localhost:3000/api-docs");
+  console.log("📖 Swagger Docs available at http://localhost:5500/api-docs");
 }
 
 module.exports = swaggerDocs;
